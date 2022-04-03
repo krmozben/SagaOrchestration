@@ -19,7 +19,6 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("SqlCon"));
 });
 
-
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
@@ -28,27 +27,14 @@ builder.Services.AddMassTransit(x =>
         {
             h.Username("guest");
             h.Password("guest");
-        }); 
-        
-        cfg.ReceiveEndpoint(RabbitMQSettingsConst.OrderPaymentCompletedEventQueueName, e =>
-        {
-            e.ConfigureConsumer<PaymentCompletedEventConsumer>(context);
         });
 
-        cfg.ReceiveEndpoint(RabbitMQSettingsConst.OrderPaymentFailedEventQueueName, e =>
-        {
-            e.ConfigureConsumer<PaymentFailedEventConsumer>(context);
-        });
+        cfg.ReceiveEndpoint(RabbitMQSettingsConst.OrderRequestComletedEventQueueName, e => e.ConfigureConsumer<OrderRequestCompletedEventConsumer>(context));
+        cfg.ReceiveEndpoint(RabbitMQSettingsConst.OrderRequestFailedEventQueueName, e => e.ConfigureConsumer<OrderRequestFailedEventConsumer>(context));
+    });
 
-
-        cfg.ReceiveEndpoint(RabbitMQSettingsConst.OrderStockNotReservedEventQueueName, e =>
-        {
-            e.ConfigureConsumer<StockNotReservedEventConsumer>(context);
-        });
-    }); 
-    x.AddConsumer<PaymentCompletedEventConsumer>();
-    x.AddConsumer<PaymentFailedEventConsumer>();
-    x.AddConsumer<StockNotReservedEventConsumer>();
+    x.AddConsumer<OrderRequestCompletedEventConsumer>();
+    x.AddConsumer<OrderRequestFailedEventConsumer>();
 });
 
 var app = builder.Build();

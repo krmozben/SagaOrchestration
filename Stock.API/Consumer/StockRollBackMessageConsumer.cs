@@ -1,22 +1,21 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Shared;
+using Shared.Messages;
 using Stock.API.Models;
 
 namespace Stock.API.Consumer
 {
-    public class PaymentFailedEventConsumer : IConsumer<PaymentFailedEvent>
+    public class StockRollBackMessageConsumer : IConsumer<IStockRollBackMessage>
     {
         private readonly AppDbContext _context;
-        private readonly ILogger<PaymentFailedEventConsumer> _logger;
+        private readonly ILogger<StockRollBackMessageConsumer> _logger;
 
-        public PaymentFailedEventConsumer(AppDbContext context, ILogger<PaymentFailedEventConsumer> logger)
+        public StockRollBackMessageConsumer(AppDbContext context, ILogger<StockRollBackMessageConsumer> logger)
         {
             _context = context;
             _logger = logger;
         }
-
-        public async Task Consume(ConsumeContext<PaymentFailedEvent> context)
+        public async Task Consume(ConsumeContext<IStockRollBackMessage> context)
         {
             foreach (var item in context.Message.OrderItems)
             {
@@ -29,7 +28,7 @@ namespace Stock.API.Consumer
                 }
             }
 
-            _logger.LogInformation($"Stock was released fron Order Id ({context.Message.OrderId})");
+            _logger.LogInformation($"Stock was released");
         }
     }
 }

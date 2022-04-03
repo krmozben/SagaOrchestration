@@ -1,41 +1,36 @@
 ﻿using MassTransit;
-using Shared;
+using Shared.Events;
+using Shared.Interfaces;
 
 namespace Payment.API.Consumer
 {
-    public class StockReservedEventConsumer : IConsumer<StockReservedEvent>
+    public class StockReservedRequestPaymentConsumer : IConsumer<IStockReservedRequestPayment>
     {
         private readonly IPublishEndpoint _publishEndpoint;
-        private readonly ILogger<StockReservedEventConsumer> _logger;
+        private readonly ILogger<StockReservedRequestPaymentConsumer> _logger;
 
-        public StockReservedEventConsumer(IPublishEndpoint publishEndpoint, ILogger<StockReservedEventConsumer> logger)
+        public StockReservedRequestPaymentConsumer(IPublishEndpoint publishEndpoint, ILogger<StockReservedRequestPaymentConsumer> logger)
         {
             _publishEndpoint = publishEndpoint;
             _logger = logger;
         }
 
-        public async Task Consume(ConsumeContext<StockReservedEvent> context)
+        public async Task Consume(ConsumeContext<IStockReservedRequestPayment> context)
         {
             var balance = 300m;
             if (balance > context.Message.Payment.TotalPrice)
             {
                 _logger.LogInformation($"{context.Message.Payment.TotalPrice} TL was withdrawn from creadit card for user id = {context.Message.BuyerId}");
 
-                await _publishEndpoint.Publish(new PaymentCompletedEvent
-                {
-                    BuyerId = context.Message.BuyerId,
-                    OrderId = context.Message.OrderId
-                });
+                await _publishEndpoint.Publish(new PaymentCompletedEvent(context.Message.CorrelationId));
             }
             else
             {
                 _logger.LogInformation($"{context.Message.Payment.TotalPrice} TL was not withdrawn from creadit card for user id = {context.Message.BuyerId}");
 
-                await _publishEndpoint.Publish(new PaymentFailedEvent
+                await _publishEndpoint.Publish(new PaymentFailedEvent(context.Message.CorrelationId)
                 {
-                    BuyerId = context.Message.BuyerId,
-                    OrderId = context.Message.OrderId,
-                    Message = "Not enough balance",
+                    Reason = "Not enough balance",
                     OrderItems = context.Message.OrderItems
                 });
             }

@@ -22,13 +22,10 @@ builder.Services.AddMassTransit(x =>
             h.Password("guest");
         });
 
-        cfg.ReceiveEndpoint(RabbitMQSettingsConst.StockReservedEventQueueName, e =>
-        {
-            e.ConfigureConsumer<StockReservedEventConsumer>(context);
-        });
+        cfg.ReceiveEndpoint(RabbitMQSettingsConst.PaymentStockReservedRequestQueueName, e => e.ConfigureConsumer<StockReservedRequestPaymentConsumer>(context));
     });
 
-    x.AddConsumer<StockReservedEventConsumer>();
+    x.AddConsumer<StockReservedRequestPaymentConsumer>();
 });
 
 
