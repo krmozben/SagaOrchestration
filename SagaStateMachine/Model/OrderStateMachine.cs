@@ -35,8 +35,6 @@ namespace SagaStateMachine.Model
 
             Event(() => PaymentCompletedEvent, y => y.CorrelateById(x => x.Message.CorrelationId));
 
-            Event(() => PaymentCompletedEvent, y => y.CorrelateById(x => x.Message.CorrelationId));
-
             Event(() => StockNotReservedEvent, y => y.CorrelateById(x => x.Message.CorrelationId));
 
             Event(() => PaymentFailedEvent, y => y.CorrelateById(x => x.Message.CorrelationId));
